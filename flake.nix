@@ -10,6 +10,7 @@
   };
   outputs = inputs@{ self, nixpkgs, ... }: 
   let
+    inherit (builtins) mapAttrs;
     system = "x86_64-linux";
     pkgs = import nixpkgs { 
       inherit system;
@@ -17,12 +18,19 @@
     };
   in {
     # NOTE: 'nixos' is the default hostname
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+    nixosConfigurations = mapAttrs (_: mainModule: nixpkgs.lib.nixosSystem {
+      specialArgs = {
+        flake = self;   
+      };
+
       modules = [ 
         inputs.ragenix.nixosModules.default
 
-        ./host-nixos.nix  
+        mainModule  
       ];
+    }) {
+      nixos = ./host-nixos.nix;
+      hoas = ./host-hoas.nix;
     };
    
     devShells.${system}.default = pkgs.mkShell {
