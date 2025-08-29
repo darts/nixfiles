@@ -5,6 +5,17 @@
 { config, lib, pkgs, ... }:
 
 {
+  networking = {
+    useDHCP = false;
+    useNetworkd = true;
+    useHostResolvConf = false;
+  }; 
+  systemd.network.enable = true;
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  nixpkgs.overlays = [
+    (import ./nixos-container-flake-attr-fix.nix) 
+  ];
+
   age.secrets = {
     dartsPassword.file = ./secrets/host-nixos-password.age;  
   };
@@ -17,13 +28,9 @@
     };
   };
 
-  # Set your time zone.
-  time.timeZone = "Europe/Berlin";
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.darts = {
     packages = with pkgs; [
-	git
 	htop
     ];
     isNormalUser = true;
@@ -45,11 +52,14 @@
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
-  programs.mtr.enable = true;
-  programs.tmux = {
-    enable = true;
-    historyLimit = 500000;
-    keyMode = "vi";
+  programs = {
+    mtr.enable = true;
+    tmux = {
+      enable = true;
+      historyLimit = 500000;
+      keyMode = "vi";
+    };
+    git.enable = true;
   };
 
   # Enable the OpenSSH daemon.

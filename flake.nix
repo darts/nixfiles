@@ -18,14 +18,17 @@
     };
   in {
     # NOTE: 'nixos' is the default hostname
-    nixosConfigurations = mapAttrs (_: mainModule: nixpkgs.lib.nixosSystem {
+    nixosConfigurations = mapAttrs (name: mainModule: nixpkgs.lib.nixosSystem {
       specialArgs = {
         flake = self;   
       };
 
       modules = [ 
         inputs.ragenix.nixosModules.default
-
+        
+        ({ lib, ... }: {
+          networking.hostName = lib.mkDefault name;
+        })
         mainModule  
       ];
     }) {
@@ -38,6 +41,9 @@
         age
         ragenix
       ];
+      shellHook = ''
+        alias ragenix='ragenix -i .secret.key'
+      '';
     };
   };
 }

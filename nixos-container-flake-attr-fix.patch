@@ -1,0 +1,26 @@
+--- nixos-container.pl	2025-08-28 23:16:24.943858879 +0100
++++ nixos-container-flake-attr-fix.pl	2025-08-28 23:16:07.009771006 +0100
+@@ -129,11 +129,6 @@
+         "Please define one or the other, but not both";
+ }
+ 
+-if (defined $flake && $flake =~ /^(.*)#([^#"]+)$/) {
+-    $flake = $1;
+-    $flakeAttr = $2;
+-}
+-
+ # Execute the selected action.
+ 
+ mkpath("$configurationDirectory", 0, 0755);
+@@ -182,6 +177,11 @@
+ }
+ 
+ sub buildFlake {
++    if (defined $flake && $flake =~ /^(.*)#([^#"]+)$/) {
++        $flake = $1;
++        $flakeAttr = $2;
++    }
++
+     system("nix", "build", "-o", "$systemPath.tmp", @nixFlags, "--",
+            "$flake#nixosConfigurations.\"$flakeAttr\".config.system.build.toplevel") == 0
+         or die "$0: failed to build container from flake '$flake'\n";
